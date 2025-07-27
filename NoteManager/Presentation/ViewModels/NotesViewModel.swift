@@ -19,29 +19,10 @@ final class NotesViewModel {
     
     init(useCase: NotesUseCase) {
         self.useCase = useCase
-        useCase.observeNotes()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] notes in
-                self?.allNotes = notes
-                self?.filteredNotes = notes
-            }
-            .store(in: &cancellables)
         
+        subscribeToNotesPublisher()
         fetchNotes()
-        
-        $searchQuery
-            .combineLatest($allNotes)
-            .map { query, notes in
-                if query != "" {
-                    return notes.filter({
-                        $0.content.lowercased().contains(query.lowercased()) ||
-                        $0.title.lowercased().contains(query.lowercased())
-                    })
-                } else {
-                    return notes
-                }
-            }
-            .assign(to: &$filteredNotes)
+        subscribeToSearchQuery()
     }
     
     func fetchNotes() {
@@ -79,5 +60,34 @@ final class NotesViewModel {
     
     func searchNotes(with query: String) {
         searchQuery = query
+    }
+}
+
+extension NotesViewModel {
+    
+    private func subscribeToNotesPublisher() {
+        useCase.observeNotes()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notes in
+                self?.allNotes = notes
+                self?.filteredNotes = notes
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func subscribeToSearchQuery() {
+        $searchQuery
+            .combineLatest($allNotes)
+            .map { query, notes in
+                if query != "" {
+                    return notes.filter({
+                        $0.content.lowercased().contains(query.lowercased()) ||
+                        $0.title.lowercased().contains(query.lowercased())
+                    })
+                } else {
+                    return notes
+                }
+            }
+            .assign(to: &$filteredNotes)
     }
 }
