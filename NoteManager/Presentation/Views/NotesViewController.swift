@@ -49,16 +49,13 @@ class NotesViewController: UIViewController {
     
     private func setupToolBar() {
         self.title = "Notes App"
-        navigationController?.setToolbarHidden(false, animated: true)
-        
-        let addButton = UIBarButtonItem(
-            systemItem: .add,
-            primaryAction: UIAction { _ in
-                self.showCreateNewNoteAlert()
-            }
-        )
-        
-        toolbarItems = [addButton]
+        navigationController?.setToolbarHidden(false, animated: false)
+        let rightButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNoteButtonTapped))
+        navigationItem.rightBarButtonItem = rightButton
+    }
+    
+    @objc private func addNewNoteButtonTapped() {
+        self.showCreateNewNoteAlert()
     }
     
     private func showCreateNewNoteAlert() {
